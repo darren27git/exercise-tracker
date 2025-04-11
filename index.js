@@ -94,7 +94,26 @@ app.post('/api/users/:_id/exercises', async(req,res) => {
   }
 });
 
+app.get('/api/users', async (req,res) => {
+  const findUsers = await trackerModel.findOne({});
+  res.json({_id : findUsers._id, username : findUsers.username});
+});
 
+app.get('/api/users/:_id/logs', async (req,res) => {
+  const userInputId = req.params._id;
+  const findUserLogs = await trackerModel.findById(userInputId);
+  if(findUserLogs){
+    res.json({
+      _id : findUserLogs._id,
+      username : findUserLogs.username,
+      count : findUserLogs.count,
+      log: findUserLogs.log
+    });
+  }
+  else{
+    res.status(404).json({ error: 'User not found' });
+  }
+});
 
 
 const listener = app.listen(process.env.PORT || 3000, () => {

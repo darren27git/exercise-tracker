@@ -95,19 +95,27 @@ app.post('/api/users/:_id/exercises', async(req,res) => {
 });
 
 app.get('/api/users', async (req,res) => {
-  const findUsers = await trackerModel.findOne({});
-  res.json({_id : findUsers._id, username : findUsers.username});
+  const findUsers = await trackerModel.find({});
+  const allUsersArray = findUsers.map(users => ({
+    username : users.username,
+    _id : users._id
+  }));
+  res.send(allUsersArray);
 });
 
 app.get('/api/users/:_id/logs', async (req,res) => {
   const userInputId = req.params._id;
   const findUserLogs = await trackerModel.findById(userInputId);
   if(findUserLogs){
+    const convertedLog = findUserLogs.log.map(logs => ({
+      ...logs.toObject(),
+      date : logs.date.toDateString()
+    }));
     res.json({
       _id : findUserLogs._id,
       username : findUserLogs.username,
       count : findUserLogs.count,
-      log: findUserLogs.log
+      log: convertedLog
     });
   }
   else{

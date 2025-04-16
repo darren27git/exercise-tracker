@@ -63,7 +63,7 @@ app.post('/api/users/:_id/exercises', async(req,res) => {
       const inputDate = new Date(req.body.date);
       dateString = inputDate.toDateString();
     }
-    console.log("dateString : " + dateString);
+    //console.log("dateString : " + dateString);
     const checkUserId = await trackerModel.findOne({_id : inputId});
     if(checkUserId){
       const newLog = {
@@ -71,7 +71,7 @@ app.post('/api/users/:_id/exercises', async(req,res) => {
         duration : inputDuration,
         date: dateString
       };
-      console.log("usedate: " + newLog.date);
+     // console.log("usedate: " + newLog.date);
       checkUserId.log.push(newLog);
       checkUserId.count += 1;
       await checkUserId.save();
@@ -105,22 +105,53 @@ app.get('/api/users', async (req,res) => {
 
 app.get('/api/users/:_id/logs', async (req,res) => {
   const userInputId = req.params._id;
+  const from = req.query.from;
+  const to = req.query.to;
+  const limit = req.query.limit;
+  
   const findUserLogs = await trackerModel.findById(userInputId);
-  if(findUserLogs){
-    const convertedLog = findUserLogs.log.map(logs => ({
-      ...logs.toObject(),
-      date : logs.date.toDateString()
-    }));
-    res.json({
-      _id : findUserLogs._id,
-      username : findUserLogs.username,
-      count : findUserLogs.count,
-      log: convertedLog
-    });
-  }
-  else{
+ 
+  if(!findUserLogs){
     res.status(404).json({ error: 'User not found' });
   }
+  let userLog = findUserLogs.log;
+  if(from || to){
+    let startDate;
+    let endDate;
+    if(from){
+      startDate = new Date(from);
+      console.log("start at" + startDate);
+    }
+    if(to){
+      endDate = new Date(to);
+      console.log("up to" + endDate);
+    }
+
+    userLog = userLog.filter(matchLog => {
+      const logDate = new Date(matchLog.date);
+      console.log("logDate is : " + logDate);
+      return (logDate >= startDate) && (logDate <= endDate);
+    });
+  }
+
+  const limitInt = parseInt(limit);
+  console.log("limit is: " + limitInt);
+  if(limitInt){
+    userLog = userLog.slice(0,limitInt);
+  }
+  console.log("userLog is: " + userLog);
+  const convertedLog = userLog.map(logs => ({
+    ...logs.toObject(),
+    date : logs.date.toDateString()
+  }));
+
+  res.json({
+    _id : findUserLogs._id,
+    username : findUserLogs.username,
+    count : userLog.length,
+    log: convertedLog
+  });
+
 });
 
 

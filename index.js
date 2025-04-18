@@ -129,17 +129,17 @@ app.get('/api/users/:_id/logs', async (req,res) => {
 
     userLog = userLog.filter(matchLog => {
       const logDate = new Date(matchLog.date);
-      console.log("logDate is : " + logDate);
+      //console.log("logDate is : " + logDate);
       return (logDate >= startDate) && (logDate <= endDate);
     });
   }
 
   const limitInt = parseInt(limit);
-  console.log("limit is: " + limitInt);
+  //console.log("limit is: " + limitInt);
   if(limitInt){
     userLog = userLog.slice(0,limitInt);
   }
-  console.log("userLog is: " + userLog);
+  //console.log("userLog is: " + userLog);
   const convertedLog = userLog.map(logs => ({
     ...logs.toObject(),
     date : logs.date.toDateString()
